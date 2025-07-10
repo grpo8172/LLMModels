@@ -2,9 +2,20 @@ To run the code, it is best to use a virtual environment:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install transformers
-python DownloadPhi2HuggingFace.py
+pip install torch torchvision torchaudio       #--- For CUDA
+or
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121     #-- For GPU (Check exact command with  https://pytorch.org/get-started/locally/ then:
+Select:
+OS: Linux
+Package: pip
+Language: Python
+Compute Platform: choose the CUDA version you have (e.g., CUDA 11.8 or 12.1)
+)
 
-But you should be able to just go ahead with your C Drive if you have enough space on it for the models as they are are quite sizeable. 
+Once you have your model configured, run:
+python3 DownloadPhi2HuggingFace.py
+
+But you should be able to just go ahead with your C Drive if you have enough space on it for the models as they are are quite sizeable. I had to switch to D drive with my computer. 
 
 My code is using the phi2-local model. As this model is large, it can be downloaded onto your local drive by running: 
 python3 DownloadPhi2HuggingFace.py
@@ -21,3 +32,5 @@ So you would change it to "./mistral-local"
 
 You could really use any model from hugging face you like as long as you tell the file that downloads the models (The first step of this ReadMe) which model you want to use by copying the model name on your
 hugging face UI as you search for models.
+
+Run trainQuant.py to generate the ML model and then tryModel.py to test it out. 
