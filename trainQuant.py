@@ -5,22 +5,25 @@ import torch
 
 model_path = "./phi2-local"
 
-# ✅ Load tokenizer and model
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+dtype = torch.float16 if device.type == "cuda" else torch.float32
+
+# Load tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
 model = AutoModelForCausalLM.from_pretrained(
     model_path,
     local_files_only=True,
-    torch_dtype=torch.float16,
+    torch_dtype=dtype,
     low_cpu_mem_usage=True
-).to("cpu")
+).to(device)
 
 #model = model.to(torch.float32)
-print("✅ phi-2 model loaded in float16 on CPU!")
+print("phi-2 model loaded in float16 on CPU!")
 
-# ✅ Load dataset
+# Load dataset
 dataset = load_dataset("json", data_files="IncidentNotes.jsonl", split="train")
 
-# ✅ Convert to 'text' field if not present
+# Convert to 'text' field if not present
 if "text" not in dataset.column_names:
     def combine_fields(example):
         return {
@@ -29,7 +32,7 @@ if "text" not in dataset.column_names:
 
     dataset = dataset.map(combine_fields)
 
-# ✅ Training config
+# Training config
 training_args = TrainingArguments(
     output_dir="./phi2-finetuned-reportgen",
     per_device_train_batch_size=1,
@@ -40,7 +43,7 @@ training_args = TrainingArguments(
     save_strategy="epoch"
 )
 
-# ✅ Trainer setup
+# Trainer setup
 trainer = SFTTrainer(
     output_dir="./phi2-finetuned-reportgen",
     save_strategy="steps",
@@ -50,13 +53,13 @@ trainer = SFTTrainer(
     logging_steps=50,
     model=model,
     train_dataset=dataset,
-    #tokenizer=tokenizer,
+    #tokenizer=tokenizer,  ##Adding this back in may improve performance if required
     args=training_args,
     #dataset_text_field="text",
     #max_seq_length=512
 )
 
-# ✅ Train
+# Train
 trainer.train(resume_from_checkpoint=True)
 
 trainer.model.save_pretrained("./phi2-finetuned-reportgen")
